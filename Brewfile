@@ -52,8 +52,8 @@ brew "neovim"
 brew "pyenv"
 brew "uv"           # Python project/tool manager
 brew "pnpm"
-tap  "oven-sh/bun"
-brew "oven-sh/bun/bun"
+# bun is installed via its official installer in post-install.sh
+# (lands at ~/.bun/bin/bun to match BUN_INSTALL in config.fish).
 
 # --- Wizard UI (used by future interactive mode) ---
 brew "gum"

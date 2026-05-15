@@ -47,6 +47,22 @@ link_config "$REPO_ROOT/configs/fish/conf.d/catppuccin_mocha.fish"   "$HOME/.con
 link_config "$REPO_ROOT/configs/ghostty/config"                      "$HOME/.config/ghostty/config"
 link_config "$REPO_ROOT/configs/starship.toml"                       "$HOME/.config/starship.toml"
 
+# --- bun (official installer) --------------------------------------------
+log::step "Installing bun"
+if [[ -x "$HOME/.bun/bin/bun" ]]; then
+  log::ok "Already installed at ~/.bun/bin/bun ($("$HOME/.bun/bin/bun" --version))."
+else
+  bun_installer="$(mktemp -t bun-install)"
+  trap 'rm -f "$bun_installer"' EXIT
+  if ! curl -fsSL --retry 3 --retry-delay 2 https://bun.sh/install -o "$bun_installer"; then
+    log::die "Failed to download bun installer. Check your network and re-run."
+  fi
+  bash "$bun_installer"
+  [[ -x "$HOME/.bun/bin/bun" ]] \
+    || log::die "bun binary not found at ~/.bun/bin/bun after install."
+  log::ok "bun installed."
+fi
+
 # --- register fish as a valid login shell --------------------------------
 log::step "Registering fish as a login shell"
 if ! grep -Fxq "$FISH_BIN" /etc/shells; then
