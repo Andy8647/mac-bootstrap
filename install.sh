@@ -97,8 +97,20 @@ step "Installing Homebrew"
 if command -v brew >/dev/null 2>&1; then
   ok "Already installed at $(command -v brew)."
 else
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  # Note: `bash -c "$(curl ...)"` swallows curl failures because the failed
+  # substitution just becomes `bash -c ""` which exits 0. Fetch the installer
+  # to a temp file first so we can fail loudly on network errors.
+  brew_installer="$(mktemp -t brew-install)"
+  trap 'rm -f "$brew_installer"' EXIT
+  if ! curl -fsSL --retry 3 --retry-delay 2 \
+       https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh \
+       -o "$brew_installer"; then
+    die "Failed to download Homebrew installer. Check your network and re-run the bootstrap."
+  fi
+  /bin/bash "$brew_installer"
 fi
+[[ -x "$BREW_PREFIX/bin/brew" ]] \
+  || die "Homebrew binary not found at $BREW_PREFIX/bin/brew after install. Re-run the bootstrap."
 eval "$("$BREW_PREFIX/bin/brew" shellenv)"
 
 # --- fetch repo -----------------------------------------------------------
@@ -115,7 +127,11 @@ fi
 ok "Repo at $REPO_ROOT"
 
 # --- hand off to post-install --------------------------------------------
+# Note: avoid `"${arr[@]}"` for an empty array — bash 3.2 (macOS /bin/bash)
+# treats it as unbound under `set -u`. Branch instead.
 step "Running post-install"
-post_args=()
-(( FORCE )) && post_args+=(--force)
-exec bash "$REPO_ROOT/post-install.sh" "${post_args[@]}"
+if (( FORCE )); then
+  exec bash "$REPO_ROOT/post-install.sh" --force
+else
+  exec bash "$REPO_ROOT/post-install.sh"
+fi
