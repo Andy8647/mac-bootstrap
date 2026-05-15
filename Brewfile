@@ -52,7 +52,8 @@ brew "neovim"
 brew "pyenv"
 brew "uv"           # Python project/tool manager
 brew "pnpm"
-brew "bun"
+tap  "oven-sh/bun"
+brew "oven-sh/bun/bun"
 
 # --- Wizard UI (used by future interactive mode) ---
 brew "gum"
