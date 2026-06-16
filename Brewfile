@@ -10,6 +10,9 @@ cask "ghostty"
 cask "font-maple-mono-nf"
 cask "font-maple-mono-nf-cn"
 
+# --- Browser (chrome-debug fn + chrome-devtools MCP) ---
+cask "google-chrome"
+
 # --- Core modern CLI ---
 brew "fd"           # find replacement
 brew "eza"          # ls replacement
@@ -43,7 +46,7 @@ brew "tealdeer"     # tldr client (Rust)
 brew "glow"         # markdown in terminal
 brew "tailspin"     # log highlighter (tspin)
 brew "tokei"        # code stats
-brew "chezmoi"      # dotfile manager (for later)
+brew "chezmoi"      # dotfile manager (applies github.com/Andy8647/dotfiles)
 
 # --- Editors ---
 brew "neovim"

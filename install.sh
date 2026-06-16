@@ -17,7 +17,7 @@ for arg in "$@"; do
       cat <<EOF
 Mac bootstrap installer
 
-  --force   overwrite existing ~/.config/{fish,ghostty} (backed up first)
+  --force   pass --force to 'chezmoi apply' (overwrite configs without prompting)
   --help    show this help
 EOF
       exit 0
@@ -56,30 +56,9 @@ case "$ARCH" in
   *)      die "Unsupported architecture: $ARCH" ;;
 esac
 
-step "Checking for existing configs"
-conflicts=()
-for p in "$HOME/.config/fish/config.fish" "$HOME/.config/ghostty/config" "$HOME/.config/starship.toml"; do
-  [[ -e "$p" && ! -L "$p" ]] && conflicts+=("$p")
-done
-if (( ${#conflicts[@]} > 0 )); then
-  if (( FORCE )); then
-    ts="$(date +%Y%m%d-%H%M%S)"
-    backup="$HOME/.config/backup-$ts"
-    mkdir -p "$backup"
-    for p in "${conflicts[@]}"; do
-      rel="${p#$HOME/.config/}"
-      mkdir -p "$backup/$(dirname "$rel")"
-      mv "$p" "$backup/$rel"
-    done
-    ok "Backed up existing configs to $backup"
-  else
-    warn "Found existing configs:"
-    for p in "${conflicts[@]}"; do printf '    %s\n' "$p" >&2; done
-    die "Re-run with --force to back them up and continue."
-  fi
-else
-  ok "No conflicting configs."
-fi
+# Config files are managed by chezmoi (handed off in post-install.sh), which
+# does its own conflict handling — no symlink preflight needed here. The
+# --force flag is passed through to `chezmoi apply --force`.
 
 # --- Xcode Command Line Tools --------------------------------------------
 step "Installing Xcode Command Line Tools"

@@ -1,7 +1,9 @@
 # mac-bootstrap
 
-One-shot installer that reproduces my terminal environment on a fresh Apple Silicon Mac:
-**Ghostty + fish + Starship + Catppuccin Mocha**, plus the modern CLI toolkit (eza, bat, ripgrep, fzf, zoxide, lazygit, yazi, neovim, …).
+One-shot installer that reproduces my full environment on a fresh Apple Silicon Mac:
+**Ghostty + fish + Starship + Catppuccin Mocha**, the modern CLI toolkit (eza, bat, ripgrep, fzf, zoxide, lazygit, yazi, neovim, …), **Claude Code** (+ the `claude-sk` DeepSeek/permafrost setup), and all my dotfiles.
+
+This repo is the **imperative provisioner** (Homebrew, packages, Claude Code, permafrost). All actual config files live in [`Andy8647/dotfiles`](https://github.com/Andy8647/dotfiles) and are applied by **chezmoi** — a single source of truth, no symlink overlap.
 
 ## Install
 
@@ -11,27 +13,41 @@ From the native macOS Terminal on a fresh Mac:
 curl -fsSL https://raw.githubusercontent.com/Andy8647/mac-bootstrap/main/install.sh | bash
 ```
 
-To overwrite existing `~/.config/{fish,ghostty,starship.toml}` (originals are backed up first):
+Force-overwrite existing configs without prompting (passed through to `chezmoi apply --force`):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Andy8647/mac-bootstrap/main/install.sh | bash -s -- --force
 ```
+
+> During the run, chezmoi prompts **once** for the DeepSeek API key (used by the
+> `claude-sk` fish function). Enter a current, valid key — it's stored only in
+> machine-local `~/.config/chezmoi/chezmoi.toml`, never committed.
 
 ## What it does
 
 1. Installs Xcode Command Line Tools (GUI dialog — click "Install" and wait).
 2. Installs Homebrew.
 3. Clones this repo to `~/.local/share/mac-bootstrap`.
-4. Runs `brew bundle` against [Brewfile](./Brewfile).
-5. Symlinks configs into `~/.config/`.
-6. Registers fish in `/etc/shells` (sudo password prompt) and `chsh -s` to fish (login password prompt).
+4. Runs `brew bundle` against [Brewfile](./Brewfile) (CLI tools, fonts, Ghostty, Chrome).
+5. Installs **bun** and **Claude Code** (native).
+6. Clones **permafrost** (DeepSeek proxy) to `~/Projects/permafrost`.
+7. Runs `chezmoi init Andy8647 && chezmoi apply` — applies fish/ghostty/starship/nvim/`.claude`/claude-hud configs, and registers the chrome-devtools MCP.
+8. Registers fish in `/etc/shells` and `chsh -s` to fish.
+
+## After it finishes
+
+- Launch `claude`, then `/plugin marketplace add jarrodwatts/claude-hud` and `/plugin install claude-hud` (its `config.json` is already in place).
+- For `claude-sk`: start the proxy on demand with `~/Projects/permafrost/cli/permafrost wrap` (see its README).
 
 ## Update later
 
 ```bash
-cd ~/.local/share/mac-bootstrap && git pull && ./post-install.sh
+cd ~/.local/share/mac-bootstrap && git pull && ./post-install.sh   # tools
+chezmoi update                                                     # dotfiles
 ```
 
 ## Scope
 
-Only the terminal layer. Python toolchains (`pyenv install`, `uv tool install …`), Neovim config, Claude Code setup, and other personal dotfiles are intentionally out of scope.
+Imperative provisioning + dotfiles via chezmoi. Python toolchains
+(`pyenv install`, `uv tool install …`) and `permafrost` configuration/startup
+are intentionally left manual.
