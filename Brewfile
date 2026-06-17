@@ -52,6 +52,7 @@ brew "chezmoi"      # dotfile manager (applies github.com/Andy8647/dotfiles)
 brew "neovim"
 
 # --- Language runtimes & managers ---
+brew "node"         # required by the claude-hud statusline (/opt/homebrew/bin/node)
 brew "pyenv"
 brew "uv"           # Python project/tool manager
 brew "pnpm"
